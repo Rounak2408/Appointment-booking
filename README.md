@@ -186,13 +186,6 @@ node backend/scripts/updateAdmin.js <email> <phone> <location>
 node backend/scripts/verifyDatabase.js
 ```
 
-## 📖 Documentation
-
-See `docs/` folder for detailed guides:
-- MongoDB setup and troubleshooting
-- Admin user management
-- Database verification
-
 ## 🔒 Security
 
 - Password hashing with bcryptjs
