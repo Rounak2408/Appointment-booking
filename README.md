@@ -21,67 +21,68 @@ A complete MERN stack appointment booking system with Razorpay payment integrati
 
 ```
 Appointment/
-├── backend/                    # Node.js + Express backend
-│   ├── controllers/            # Business logic
-│   │   ├── authController.js   # Authentication
-│   │   ├── appointmentController.js  # Appointments
-│   │   └── paymentController.js      # Payments
-│   ├── models/                 # MongoDB schemas
+├── backend/                     # Node.js + Express Backend
+│   ├── controllers/             # Business Logic
+│   │   ├── authController.js
+│   │   ├── appointmentController.js
+│   │   └── paymentController.js
+│   ├── models/                 # Database Schemas
 │   │   ├── User.js
 │   │   └── Appointment.js
-│   ├── routes/                 # API endpoints
+│   ├── routes/                 # API Routes
 │   │   ├── authRoutes.js
 │   │   ├── appointmentRoutes.js
 │   │   └── paymentRoutes.js
-│   ├── middleware/             # Middleware
-│   │   ├── auth.js             # JWT auth
-│   │   ├── admin.js             # Admin check
-│   │   └── errorHandler.js     # Error handling
-│   ├── scripts/                # Utility scripts
-│   │   ├── createAdmin.js      # Create admin
-│   │   ├── checkAdmin.js       # Check admins
-│   │   ├── updateAdmin.js      # Update admin
-│   │   └── verifyDatabase.js   # Verify DB
-│   ├── env.example             # Environment template
+│   ├── middleware/             # Express Middleware
+│   │   ├── auth.js
+│   │   ├── admin.js
+│   │   └── errorHandler.js
+│   ├── scripts/                # Utility Scripts
+│   │   ├── createAdmin.js
+│   │   ├── checkAdmin.js
+│   │   ├── updateAdmin.js
+│   │   └── verifyDatabase.js
+│   ├── env.example
 │   ├── package.json
-│   └── server.js               # Main server
+│   └── server.js
 │
-├── frontend/                   # React frontend
+├── frontend/                    # React Frontend
 │   ├── src/
-│   │   ├── components/         # Reusable components
+│   │   ├── components/          # UI Components
 │   │   │   ├── Navbar.js
 │   │   │   ├── PrivateRoute.js
 │   │   │   └── AdminRoute.js
-│   │   ├── pages/              # Page components
+│   │   ├── pages/               # Page Components
 │   │   │   ├── Home.js
 │   │   │   ├── Login.js
 │   │   │   ├── Signup.js
 │   │   │   ├── BookAppointment.js
 │   │   │   ├── MyAppointments.js
 │   │   │   └── AdminDashboard.js
-│   │   ├── context/            # React Context
+│   │   ├── context/             # State Management
 │   │   │   └── AuthContext.js
-│   │   ├── hooks/              # Custom hooks
+│   │   ├── hooks/               # Custom Hooks
 │   │   │   └── useAuth.js
-│   │   ├── services/           # API services
+│   │   ├── services/            # API Integration
 │   │   │   └── api.js
 │   │   ├── App.js
 │   │   ├── App.css
 │   │   ├── index.js
 │   │   ├── index.css
-│   │   └── responsive.css      # Mobile styles
+│   │   └── responsive.css
 │   ├── public/
 │   │   └── index.html
 │   ├── env.example
 │   └── package.json
 │
-├── docs/                       # Documentation
+├── docs/                        # Documentation
 │   ├── HOW_TO_CHECK_MONGODB.md
 │   ├── MONGODB_COMPASS_FIX.md
 │   ├── MONGODB_COMPASS_GUIDE.md
 │   └── UPDATE_ADMIN_GUIDE.md
 │
-└── README.md                   # This file
+├── .gitignore
+└── README.md
 ```
 
 ## 🚀 Quick Start
