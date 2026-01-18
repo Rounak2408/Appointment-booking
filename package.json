@@ -1,0 +1,17 @@
+{
+  "name": "appointment-booking-system",
+  "version": "1.0.0",
+  "description": "Complete MERN Stack Appointment Booking System",
+  "scripts": {
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start"
+  },
+  "keywords": ["mern", "appointment", "booking"],
+  "author": "",
+  "license": "ISC"
+}
