@@ -4,13 +4,14 @@
   "description": "Complete MERN Stack Appointment Booking System",
   "scripts": {
     "start": "node backend/server.js",
-    "install:backend": "cd backend && npm install",
-    "install:frontend": "cd frontend && npm install",
+    "postinstall": "npm --prefix backend install --omit=dev",
+    "install:backend": "npm --prefix backend install",
+    "install:frontend": "npm --prefix frontend install",
     "install:all": "npm run install:backend && npm run install:frontend",
-    "start:backend": "cd backend && npm start",
-    "start:frontend": "cd frontend && npm start",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm start"
+    "start:backend": "npm --prefix backend start",
+    "start:frontend": "npm --prefix frontend start",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend start"
   },
   "keywords": ["mern", "appointment", "booking"],
   "author": "",
