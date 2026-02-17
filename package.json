@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Complete MERN Stack Appointment Booking System",
   "scripts": {
+    "start": "node backend/server.js",
     "install:backend": "cd backend && npm install",
     "install:frontend": "cd frontend && npm install",
     "install:all": "npm run install:backend && npm run install:frontend",
