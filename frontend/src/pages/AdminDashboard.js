@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 
@@ -17,36 +17,23 @@ const AdminDashboard = () => {
   const [dateFilter, setDateFilter] = useState('');
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchAppointments();
-    fetchUsers();
-    // Refresh user data to ensure phone and location are available
-    refreshUserData();
-  }, []);
-
-  useEffect(() => {
-    if (activeTab === 'appointments') {
-      fetchAppointments();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, dateFilter, search]);
-
-  const refreshUserData = async () => {
+  const refreshUserData = useCallback(async () => {
     try {
       await api.get('/auth/me');
       // Update user context if needed - the useAuth hook should handle this
     } catch (err) {
       console.error('Failed to refresh user data:', err);
     }
-  };
+  }, []);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async (filters) => {
     try {
       setLoading(true);
+      const { status, date, search: searchQuery } = filters || {};
       const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-      if (dateFilter) params.append('date', dateFilter);
-      if (search) params.append('search', search);
+      if (status && status !== 'all') params.append('status', status);
+      if (date) params.append('date', date);
+      if (searchQuery) params.append('search', searchQuery);
       
       const queryString = params.toString();
       const url = `/appointments${queryString ? `?${queryString}` : ''}`;
@@ -58,16 +45,28 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await api.get('/auth/users');
       setUsers(response.data.data.users);
     } catch (err) {
       console.error('Error fetching users:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+    // Refresh user data to ensure phone and location are available
+    refreshUserData();
+  }, [fetchUsers, refreshUserData]);
+
+  useEffect(() => {
+    if (activeTab === 'appointments') {
+      fetchAppointments({ status: statusFilter, date: dateFilter, search });
+    }
+  }, [activeTab, dateFilter, fetchAppointments, search, statusFilter]);
 
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     try {

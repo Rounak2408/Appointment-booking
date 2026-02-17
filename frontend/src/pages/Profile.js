@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -36,7 +36,7 @@ const passwordSchema = yup.object().shape({
 });
 
 const Profile = () => {
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'password'
@@ -59,9 +59,21 @@ const Profile = () => {
     resolver: yupResolver(passwordSchema)
   });
 
+  const fetchProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/auth/profile');
+      setUser(response.data.data.user);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to fetch profile');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [fetchProfile]);
 
   useEffect(() => {
     if (user) {
@@ -73,18 +85,6 @@ const Profile = () => {
       });
     }
   }, [user, resetProfile]);
-
-  const fetchProfile = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/auth/profile');
-      setUser(response.data.data.user);
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to fetch profile');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const onProfileSubmit = async (data) => {
     try {

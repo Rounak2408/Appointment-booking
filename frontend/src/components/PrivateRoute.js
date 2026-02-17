@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 
@@ -9,8 +9,7 @@ import { useAuth } from '../hooks/useAuth';
  * Auto-logout on JWT expiry
  */
 const PrivateRoute = ({ children }) => {
-  const { isAuthenticated, loading, user } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
