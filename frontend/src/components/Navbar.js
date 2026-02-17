@@ -37,6 +37,7 @@ const Navbar = () => {
               {!isAdmin && <Link to="/book-appointment" onClick={closeMenu}>Book Appointment</Link>}
               {!isAdmin && <Link to="/my-appointments" onClick={closeMenu}>Dashboard</Link>}
               {isAdmin && <Link to="/admin" onClick={closeMenu}>Admin Dashboard</Link>}
+              <Link to="/profile" onClick={closeMenu}>Profile</Link>
               <div className="navbar-user">
                 <button onClick={() => { logout(); closeMenu(); }} className="btn btn-secondary" style={{ 
                   padding: '8px 20px',

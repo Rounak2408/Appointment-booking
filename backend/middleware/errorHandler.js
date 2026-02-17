@@ -1,13 +1,18 @@
 /**
  * Error Handler Middleware
  * Centralized error handling for the application
+ * Standardizes all API error responses
  */
 const errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
   // Log error for debugging
-  console.error(err);
+  console.error('Error:', {
+    name: err.name,
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {
@@ -17,7 +22,8 @@ const errorHandler = (err, req, res, next) => {
 
   // Mongoose duplicate key
   if (err.code === 11000) {
-    const message = 'Duplicate field value entered';
+    const field = Object.keys(err.keyPattern || {})[0] || 'field';
+    const message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
     error = { message, statusCode: 400 };
   }
 
@@ -27,14 +33,27 @@ const errorHandler = (err, req, res, next) => {
     error = { message, statusCode: 400 };
   }
 
+  // JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    const message = 'Invalid token';
+    error = { message, statusCode: 401 };
+  }
+
+  if (err.name === 'TokenExpiredError') {
+    const message = 'Token expired';
+    error = { message, statusCode: 401 };
+  }
+
   // Handle custom validation errors from pre-save hooks
   if (err.message && (err.message.includes('Admin must provide') || err.message.includes('phone') || err.message.includes('location'))) {
     error = { message: err.message, statusCode: 400 };
   }
 
+  // Standardized error response
   res.status(error.statusCode || 500).json({
     success: false,
-    message: error.message || 'Server Error'
+    message: error.message || 'Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };
 

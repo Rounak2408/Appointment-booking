@@ -25,15 +25,27 @@ export const AuthProvider = ({ children }) => {
           const response = await api.get('/auth/me');
           setUser(response.data.data.user);
         } catch (error) {
-          // Token is invalid, clear it
+          // Token is invalid or expired, clear it
           localStorage.removeItem('token');
           delete api.defaults.headers.common['Authorization'];
+          setUser(null);
+          setToken(null);
         }
       }
       setLoading(false);
     };
 
     checkAuth();
+
+    // Listen for logout events from API interceptor
+    const handleLogout = () => {
+      logout();
+    };
+    window.addEventListener('auth:logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('auth:logout', handleLogout);
+    };
   }, []);
 
   /**
@@ -106,6 +118,18 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
   };
+
+  // Set up logout event listener
+  useEffect(() => {
+    const handleLogout = () => {
+      logout();
+    };
+    window.addEventListener('auth:logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('auth:logout', handleLogout);
+    };
+  }, []);
 
   const value = {
     user,

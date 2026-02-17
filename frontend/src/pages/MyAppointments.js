@@ -11,6 +11,9 @@ const MyAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const paymentAppointmentId = searchParams.get('payment');
@@ -23,11 +26,19 @@ const MyAppointments = () => {
       handlePayment(paymentAppointmentId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentAppointmentId]);
+  }, [paymentAppointmentId, statusFilter, dateFilter, search]);
 
   const fetchAppointments = async () => {
     try {
-      const response = await api.get('/appointments/my-appointments');
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (dateFilter) params.append('date', dateFilter);
+      if (search) params.append('search', search);
+      
+      const queryString = params.toString();
+      const url = `/appointments/my-appointments${queryString ? `?${queryString}` : ''}`;
+      const response = await api.get(url);
       setAppointments(response.data.data.appointments);
     } catch (err) {
       setError('Failed to fetch appointments');
@@ -259,6 +270,89 @@ const MyAppointments = () => {
           <div style={{ fontSize: '36px', marginBottom: '10px' }}>✅</div>
           <h3 style={{ fontSize: '32px', marginBottom: '5px', fontWeight: '700' }}>{stats.accepted}</h3>
           <p style={{ fontSize: '16px', opacity: 0.9 }}>Accepted</p>
+        </div>
+      </div>
+
+      {/* Search and Filter Section */}
+      <div className="card" style={{ 
+        marginBottom: '30px', 
+        background: '#1a1a1a', 
+        border: '1px solid #333',
+        padding: '20px'
+      }}>
+        <h3 style={{ marginBottom: '20px', color: '#fff', fontSize: '20px' }}>🔍 Search & Filter</h3>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '15px' 
+        }}>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label style={{ color: '#fff', marginBottom: '8px', display: 'block' }}>Search</label>
+            <input
+              type="text"
+              placeholder="Search by service type..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: '1px solid #444',
+                background: '#2a2a2a',
+                color: '#fff'
+              }}
+            />
+          </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label style={{ color: '#fff', marginBottom: '8px', display: 'block' }}>Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: '1px solid #444',
+                background: '#2a2a2a',
+                color: '#fff'
+              }}
+            >
+              <option value="all">All Status</option>
+              <option value="booked">Booked</option>
+              <option value="accepted">Accepted</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label style={{ color: '#fff', marginBottom: '8px', display: 'block' }}>Date</label>
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: '1px solid #444',
+                background: '#2a2a2a',
+                color: '#fff'
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('all');
+                setDateFilter('');
+              }}
+              className="btn btn-secondary"
+              style={{ width: '100%', padding: '10px' }}
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
       </div>
 

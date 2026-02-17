@@ -1,21 +1,39 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { toast } from 'react-toastify';
 import api from '../services/api';
 
 /**
- * Book Appointment Page
+ * Book Appointment Page with Form Validation
  */
+const schema = yup.object().shape({
+  serviceType: yup
+    .string()
+    .required('Service type is required'),
+  date: yup
+    .string()
+    .required('Date is required')
+    .test('future-date', 'Date must be today or in the future', function(value) {
+      if (!value) return false;
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return selectedDate >= today;
+    }),
+  timeSlot: yup
+    .string()
+    .required('Time slot is required'),
+  amount: yup
+    .number()
+    .required('Amount is required')
+    .min(0, 'Amount must be positive')
+    .typeError('Amount must be a number')
+});
+
 const BookAppointment = () => {
-  const [formData, setFormData] = useState({
-    serviceType: '',
-    date: '',
-    timeSlot: '',
-    amount: 500
-  });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
-  
   const navigate = useNavigate();
 
   // Generate time slots
@@ -25,34 +43,31 @@ const BookAppointment = () => {
     '05:00 PM', '06:00 PM'
   ];
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting }
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      amount: 500
+    }
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    setLoading(true);
-
+  const onSubmit = async (data) => {
     try {
-      // Create appointment
-      const response = await api.post('/appointments', formData);
+      const response = await api.post('/appointments', data);
       const appointment = response.data.data.appointment;
       
-      setSuccess('Appointment created! Redirecting to payment...');
+      toast.success('Appointment created successfully!');
       
       // Redirect to payment page after a short delay
       setTimeout(() => {
         navigate(`/my-appointments?payment=${appointment._id}`);
       }, 1500);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create appointment');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to create appointment';
+      toast.error(errorMessage);
     }
   };
 
@@ -64,17 +79,12 @@ const BookAppointment = () => {
       <h1 className="page-title">Book Appointment</h1>
       <div className="form-container">
         <div className="card" style={{ background: '#1a1a1a', border: '1px solid #333' }}>
-          <form onSubmit={handleSubmit}>
-            {error && <div className="error-message">{error}</div>}
-            {success && <div className="success-message">{success}</div>}
-            
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="form-group">
               <label>Service Type</label>
               <select
-                name="serviceType"
-                value={formData.serviceType}
-                onChange={handleChange}
-                required
+                {...register('serviceType')}
+                className={errors.serviceType ? 'error' : ''}
               >
                 <option value="">Select a service</option>
                 <option value="Consultation">Consultation</option>
@@ -82,27 +92,29 @@ const BookAppointment = () => {
                 <option value="Follow-up">Follow-up</option>
                 <option value="Emergency">Emergency</option>
               </select>
+              {errors.serviceType && (
+                <span className="error-message">{errors.serviceType.message}</span>
+              )}
             </div>
 
             <div className="form-group">
               <label>Date</label>
               <input
                 type="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
+                {...register('date')}
                 min={today}
-                required
+                className={errors.date ? 'error' : ''}
               />
+              {errors.date && (
+                <span className="error-message">{errors.date.message}</span>
+              )}
             </div>
 
             <div className="form-group">
               <label>Time Slot</label>
               <select
-                name="timeSlot"
-                value={formData.timeSlot}
-                onChange={handleChange}
-                required
+                {...register('timeSlot')}
+                className={errors.timeSlot ? 'error' : ''}
               >
                 <option value="">Select a time slot</option>
                 {timeSlots.map((slot) => (
@@ -111,22 +123,31 @@ const BookAppointment = () => {
                   </option>
                 ))}
               </select>
+              {errors.timeSlot && (
+                <span className="error-message">{errors.timeSlot.message}</span>
+              )}
             </div>
 
             <div className="form-group">
               <label>Amount (INR)</label>
               <input
                 type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
+                {...register('amount')}
                 min="0"
-                required
+                className={errors.amount ? 'error' : ''}
               />
+              {errors.amount && (
+                <span className="error-message">{errors.amount.message}</span>
+              )}
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%' }}>
-              {loading ? 'Creating...' : 'Book Appointment'}
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              disabled={isSubmitting} 
+              style={{ width: '100%' }}
+            >
+              {isSubmitting ? 'Creating...' : 'Book Appointment'}
             </button>
           </form>
         </div>

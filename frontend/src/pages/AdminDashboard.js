@@ -12,6 +12,9 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('appointments'); // 'appointments' or 'users'
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -20,6 +23,13 @@ const AdminDashboard = () => {
     // Refresh user data to ensure phone and location are available
     refreshUserData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'appointments') {
+      fetchAppointments();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, dateFilter, search]);
 
   const refreshUserData = async () => {
     try {
@@ -32,7 +42,15 @@ const AdminDashboard = () => {
 
   const fetchAppointments = async () => {
     try {
-      const response = await api.get('/appointments');
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+      if (dateFilter) params.append('date', dateFilter);
+      if (search) params.append('search', search);
+      
+      const queryString = params.toString();
+      const url = `/appointments${queryString ? `?${queryString}` : ''}`;
+      const response = await api.get(url);
       setAppointments(response.data.data.appointments);
     } catch (err) {
       setError('Failed to fetch appointments');
@@ -400,6 +418,91 @@ const AdminDashboard = () => {
       )}
 
       {/* Tabs */}
+      {/* Search and Filter Section - Only show for appointments tab */}
+      {activeTab === 'appointments' && (
+        <div className="card" style={{ 
+          marginBottom: '30px', 
+          background: '#1a1a1a', 
+          border: '1px solid #333',
+          padding: '20px'
+        }}>
+          <h3 style={{ marginBottom: '20px', color: '#fff', fontSize: '20px' }}>🔍 Search & Filter</h3>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+            gap: '15px' 
+          }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ color: '#fff', marginBottom: '8px', display: 'block' }}>Search</label>
+              <input
+                type="text"
+                placeholder="Search by service type or admin name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: '1px solid #444',
+                  background: '#2a2a2a',
+                  color: '#fff'
+                }}
+              />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ color: '#fff', marginBottom: '8px', display: 'block' }}>Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: '1px solid #444',
+                  background: '#2a2a2a',
+                  color: '#fff'
+                }}
+              >
+                <option value="all">All Status</option>
+                <option value="booked">Booked</option>
+                <option value="accepted">Accepted</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ color: '#fff', marginBottom: '8px', display: 'block' }}>Date</label>
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: '1px solid #444',
+                  background: '#2a2a2a',
+                  color: '#fff'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setStatusFilter('all');
+                  setDateFilter('');
+                }}
+                className="btn btn-secondary"
+                style={{ width: '100%', padding: '10px' }}
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="admin-tabs" style={{
         display: 'flex',
         gap: '10px',

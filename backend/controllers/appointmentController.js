@@ -62,12 +62,37 @@ exports.createAppointment = async (req, res, next) => {
 
 /**
  * @route   GET /api/appointments/my-appointments
- * @desc    Get current user's appointments
+ * @desc    Get current user's appointments with search and filter
  * @access  Private
  */
 exports.getMyAppointments = async (req, res, next) => {
   try {
-    const appointments = await Appointment.find({ userId: req.user.id })
+    const { status, date, search } = req.query;
+    const userId = req.user.id;
+
+    // Build query
+    const query = { userId };
+
+    // Filter by status
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    // Filter by date
+    if (date) {
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+      query.date = { $gte: startDate, $lte: endDate };
+    }
+
+    // Search by service type
+    if (search) {
+      query.serviceType = { $regex: search, $options: 'i' };
+    }
+
+    const appointments = await Appointment.find(query)
       .populate('userId', 'name email')
       .sort({ createdAt: -1 });
 
@@ -169,13 +194,41 @@ exports.cancelAppointment = async (req, res, next) => {
 
 /**
  * @route   GET /api/appointments
- * @desc    Get all appointments (Admin only)
+ * @desc    Get all appointments with search and filter (Admin only)
  * @access  Private/Admin
  */
 exports.getAllAppointments = async (req, res, next) => {
   try {
-    const appointments = await Appointment.find()
+    const { status, date, search } = req.query;
+
+    // Build query
+    const query = {};
+
+    // Filter by status
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    // Filter by date
+    if (date) {
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+      query.date = { $gte: startDate, $lte: endDate };
+    }
+
+    // Search by service type or user name
+    if (search) {
+      query.$or = [
+        { serviceType: { $regex: search, $options: 'i' } },
+        { adminName: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const appointments = await Appointment.find(query)
       .populate('userId', 'name email')
+      .populate('acceptedBy', 'name email phone location')
       .sort({ createdAt: -1 });
 
     res.json({
