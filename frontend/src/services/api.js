@@ -4,8 +4,14 @@ import axios from 'axios';
  * API Service
  * Configured axios instance for API calls with JWT expiry handling
  */
+const fallbackBaseURL =
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://appointment-booking-866p.onrender.com/api'
+    : 'http://localhost:5000/api';
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  // Prefer env variable, fallback avoids localhost in production
+  baseURL: process.env.REACT_APP_API_URL || fallbackBaseURL,
   headers: {
     'Content-Type': 'application/json'
   }
